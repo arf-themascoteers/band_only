@@ -30,14 +30,11 @@ class CSVProcessor:
 
     @staticmethod
     def make_ml_ready_df(df):
-        for col in CSVProcessor.get_spatial_columns(df):
-            if col in df.columns:
-                df.drop(inplace=True, columns=[col], axis=1)
-        for col in ["lon", "lat", "when"]:
+        for col in ["when"]:
             if col in df.columns:
                 df.drop(inplace=True, columns=[col], axis=1)
         for col in df.columns:
-            if col not in ["scene","cell","counter","som_std"]:
+            if col not in ["scene","row","column","counter","som_std","cell"]:
                 scaler = MinMaxScaler()
                 df[col] = scaler.fit_transform(df[[col]])
         return df

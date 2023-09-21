@@ -41,7 +41,6 @@ class FoldEvaluator:
 
     def process_config(self, repeat_number, index_algorithm, index_config):
         algorithm = self.algorithms[index_algorithm]
-        config = self.config_list[index_config]
         ds = FoldDSManager(self.csvs[index_config], folds=self.folds)
         for fold_number, (train_x, train_y, test_x, test_y, validation_x, validation_y) in enumerate(ds.get_k_folds()):
             print("CSV: ", self.csvs[index_config])
