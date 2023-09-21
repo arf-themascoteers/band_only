@@ -1,5 +1,6 @@
 import torch
 from ann import ANN
+from ann_es import ANNEarlyStop
 from siamese import Siamese
 from sklearn.linear_model import LinearRegression
 from sklearn.cross_decomposition import PLSRegression
@@ -21,6 +22,11 @@ class AlgorithmRunner:
         if algorithm == "ann":
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model_instance = ANN(device, train_x, train_y, test_x, test_y, validation_x, validation_y)
+            model_instance.train_model()
+            y_hats = model_instance.test()
+        elif algorithm == "ann_es":
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model_instance = ANNEarlyStop(device, train_x, train_y, test_x, test_y, validation_x, validation_y)
             model_instance.train_model()
             y_hats = model_instance.test()
         elif algorithm == "siamese":
