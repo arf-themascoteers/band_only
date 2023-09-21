@@ -84,11 +84,9 @@ class S2Extractor:
         cd = SceneToCSVs(self.scene_list, self.processed_path, self.source_csv_path)
         cd.create_csvs()
         csv = CSVIntegrator(self.processed_path, self.dir_hash_path, self.scene_list)
-        complete_row, ag_row, ml_row = csv.integrate_row()
-        complete_col, ag_col, ml_col = csv.integrate_col()
-        complete_mean, ag_mean, ml_mean = csv.integrate_mean()
+        complete_row, ag_row, ml_row = csv.integrate()
         self.write_dataset_list_file(self.dir_hash, self.scenes_str)
-        return ml_row, ml_col, ml_mean, self.scene_list
+        return ml_row
 
 
 

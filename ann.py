@@ -19,14 +19,9 @@ class ANN(nn.Module):
         self.train_ds = SoilDataset(train_x, train_y)
         self.test_ds = SoilDataset(test_x, test_y)
         self.validation_ds = SoilDataset(validation_x, validation_y)
-        self.num_epochs = 2000
+        self.num_epochs = 1000
         self.batch_size = 3000
         self.lr = 0.01
-        self.TOLERANCE = 50
-        self.EARLY_STOP_THRESHOLD = 1000
-        model_name = str(time()).replace(".","_")
-        self.BEST_MODEL_PATH = f"models/{model_name}.h5"
-        self.EARLY_STOP = False
         x_size = validation_x.shape[1]
 
         self.linear = nn.Sequential(
@@ -50,12 +45,7 @@ class ANN(nn.Module):
         criterion = torch.nn.MSELoss(reduction='sum')
         dataloader = DataLoader(self.train_ds, batch_size=self.batch_size, shuffle=True)
         total_batch = len(dataloader)
-        best_r2 = -1000
-        best_r2_epoch = 0
-        tol = 0
         for epoch in range(self.num_epochs):
-            y = None
-            y_hat = None
             for batch_number, (x, y) in enumerate(dataloader):
                 x = x.to(self.device)
                 y = y.to(self.device)
@@ -72,26 +62,6 @@ class ANN(nn.Module):
                     r2_validation = r2_score(y_all, y_hat_all)
                     print(f'Epoch:{epoch + 1} (of {self.num_epochs}), Batch: {batch_number+1} of {total_batch}, '
                           f'Loss:{loss.item():.3f}, R2_TEST: {r2_test:.3f}, R2_Validation: {r2_validation:.3f}')
-
-            if self.EARLY_STOP:
-                if epoch >= self.EARLY_STOP_THRESHOLD:
-                    y_all, y_hat_all = self.evaluate(self.validation_ds)
-                    r2_validation = r2_score(y_all, y_hat_all)
-                    if r2_validation > best_r2:
-                        best_r2 = r2_validation
-                        best_r2_epoch = epoch
-                        torch.save(self.state_dict(), self.BEST_MODEL_PATH)
-                        tol = 0
-                    else:
-                        tol = tol + 1
-                    if tol >= self.TOLERANCE:
-                        r2_train = r2_score(y.detach().cpu().numpy(), y_hat.detach().cpu().numpy())
-                        print(f"Tolerance exceeded. Current {r2_validation} at epoch {epoch}. "
-                              f"Best {best_r2} was at epoch {best_r2_epoch}. Train {r2_train}")
-                        y_test, y_test_hat = self.evaluate(self.test_ds)
-                        r2_test = r2_score(y_test, y_test_hat)
-                        print(f"Test {r2_test}")
-                        return
 
     def evaluate(self, ds):
         batch_size = 30000
@@ -114,8 +84,6 @@ class ANN(nn.Module):
         return y_all, y_hat_all
 
     def test(self):
-        if self.EARLY_STOP:
-            self.load_state_dict(torch.load(self.BEST_MODEL_PATH))
         self.eval()
         self.to(self.device)
         y_all, y_hat_all = self.evaluate(self.test_ds)

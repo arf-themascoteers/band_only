@@ -4,11 +4,9 @@ import pandas as pd
 
 
 class FoldReporter:
-    def __init__(self, prefix, config_list, scenes_count, scenes_string, algorithms, repeat, folds):
+    def __init__(self, prefix, config_list, algorithms, repeat, folds):
         self.prefix = prefix
         self.config_list = config_list
-        self.scenes_count = scenes_count
-        self.scenes_string = scenes_string
         self.algorithms = algorithms
         self.repeat = repeat
         self.folds = folds
@@ -30,9 +28,6 @@ class FoldReporter:
     def write_summary(self, summary):
         summary_copy = np.round(summary,3)
         df = pd.DataFrame(data=summary_copy, columns=self.summary_columns)
-        df.insert(0,"config",pd.Series([c["name"] for c in self.config_list]))
-        df.insert(len(df.columns),"input",pd.Series(["-".join(c["input"]) for c in self.config_list]))
-        df.insert(len(df.columns),"output",pd.Series([c["output"] for c in self.config_list]))
         df.to_csv(self.summary_file, index=False)
 
     def find_mean_of_done_iterations(self, detail_cells):
@@ -60,7 +55,7 @@ class FoldReporter:
         details_alg_conf = []
         for i in self.algorithms:
             for j in self.config_list:
-                details_alg_conf.append((i,j["name"]))
+                details_alg_conf.append((i,j))
         return details_alg_conf
 
     def get_details_row(self, index_algorithm, index_config):

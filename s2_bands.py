@@ -13,3 +13,7 @@ class S2Bands:
     @staticmethod
     def get_R60m_bands():
         return ["B09"]
+
+    @staticmethod
+    def get_all_bands():
+        return S2Bands.get_R20m_bands() + S2Bands.get_R10m_bands() + S2Bands.get_R60m_bands()

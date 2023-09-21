@@ -1,12 +1,11 @@
 from s2_extractor import S2Extractor
 from fold_reporter import FoldReporter
-from config_creator import ConfigCreator
 from algorithm_runner import AlgorithmRunner
 from fold_ds_manager import FoldDSManager
 
 
 class FoldEvaluator:
-    def __init__(self, prefix="", verbose=False, repeat=1, folds=10, algorithms=None, configs=None):
+    def __init__(self, prefix="", verbose=False, repeat=1, folds=10, algorithms=None):
         self.repeat = repeat
         self.folds = folds
         self.verbose = verbose
@@ -15,29 +14,16 @@ class FoldEvaluator:
         if self.algorithms is None:
             self.algorithms = ["mlr", "rf", "svr", "ann", "siamese"]
 
-        self.config_list = []
+        self.config_list = ["Run"]
         self.csvs = []
         self.scenes = []
-        scenes_count = []
-        scenes_string = []
 
-        for config in configs:
-            config_object = ConfigCreator.create_config_object(config)
-            self.config_list.append(config_object)
-            s2 = S2Extractor(config_object["scenes"])
-            ml_row, ml_col, ml_mean, scenes = s2.process()
-            ml = ml_row
-            if config_object["ag"] == "col":
-                ml = ml_col
-            elif config_object["ag"] == "mean":
-                ml = ml_mean
+        for config in self.config_list:
+            s2 = S2Extractor(["S2A_MSIL2A_20220207T002711_N0400_R016_T54HWE_20220207T023040"])
+            ml = s2.process()
             self.csvs.append(ml)
-            self.scenes.append(scenes)
-            scenes_count.append(len(scenes))
-            scenes_string.append(scenes)
 
-        self.reporter = FoldReporter(prefix, self.config_list, scenes_count, scenes_string,
-                                 self.algorithms, self.repeat, self.folds)
+        self.reporter = FoldReporter(prefix, self.config_list, self.algorithms, self.repeat, self.folds)
 
     def process(self):
         for repeat_number in range(self.repeat):
@@ -56,7 +42,7 @@ class FoldEvaluator:
     def process_config(self, repeat_number, index_algorithm, index_config):
         algorithm = self.algorithms[index_algorithm]
         config = self.config_list[index_config]
-        ds = FoldDSManager(self.csvs[index_config], folds=self.folds, x=config["input"], y=config["output"])
+        ds = FoldDSManager(self.csvs[index_config], folds=self.folds)
         for fold_number, (train_x, train_y, test_x, test_y, validation_x, validation_y) in enumerate(ds.get_k_folds()):
             print("CSV: ", self.csvs[index_config])
             r2, rmse = self.reporter.get_details(index_algorithm, repeat_number, fold_number, index_config)
@@ -67,8 +53,7 @@ class FoldEvaluator:
                 r2, rmse = AlgorithmRunner.calculate_score(train_x, train_y,
                                                            test_x, test_y,
                                                            validation_x, validation_y,
-                                                           algorithm,
-                                                           ds.band_index_start, ds.band_count, ds.band_repeat
+                                                           algorithm
                                                            )
             if self.verbose:
                 print(f"{r2} - {rmse}")

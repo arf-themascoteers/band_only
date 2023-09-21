@@ -2,39 +2,16 @@ import pandas as pd
 from sklearn.model_selection import KFold
 import torch
 from sklearn import model_selection
+from s2_bands import S2Bands
 
 
 class FoldDSManager:
-    def __init__(self, csv, folds=10, x=None, y=None):
+    def __init__(self, csv, folds=10):
         torch.manual_seed(0)
         df = pd.read_csv(csv)
-        self.x = x
-        self.y = y
-        if y is None:
-            self.y = "som"
-        if x is None:
-            self.x = list(df.columns)
-            self.x.remove(self.y)
+        self.x = S2Bands.get_all_bands()
+        self.y = "som"
         self.folds = folds
-        x_columns = []
-
-        for a_col in self.x:
-            if not a_col.startswith("B"):
-                x_columns = x_columns + [a_col]
-
-        self.band_index_start = len(x_columns)
-        self.band_count = 0
-        self.band_repeat = 0
-        for a_col in self.x:
-            if a_col.startswith("B"):
-                matched_cols = [col for col in df.columns if a_col in col]
-                if self.band_repeat == 0:
-                    self.band_repeat = len(matched_cols)
-                x_columns = x_columns + matched_cols
-                self.band_count = self.band_count + 1
-
-        self.x = x_columns
-
         columns = self.x + [self.y]
         print("Input")
         print(self.x)

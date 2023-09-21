@@ -14,8 +14,7 @@ class AlgorithmRunner:
                         test_x, test_y,
                         validation_x,
                         validation_y,
-                        algorithm,
-                        band_index_start, band_count, band_repeat
+                        algorithm
                         ):
         y_hats = None
         print(f"Train: {len(train_y)}, Test: {len(test_y)}, Validation: {len(validation_y)}")
@@ -26,8 +25,7 @@ class AlgorithmRunner:
             y_hats = model_instance.test()
         elif algorithm == "siamese":
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            model_instance = Siamese(device, train_x, train_y, test_x, test_y, validation_x, validation_y,
-                                     band_index_start, band_count, band_repeat)
+            model_instance = Siamese(device, train_x, train_y, test_x, test_y, validation_x, validation_y)
             model_instance.train_model()
             y_hats = model_instance.test()
 
